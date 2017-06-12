@@ -4,7 +4,8 @@ var path = require('path');
 module.exports = {
   devtool: 'inline-source-map',
   entry: {
-    app: './src/app.js'
+    app: './src/app.js',
+    tweet: './src/tweet.js'
   },
   output: {
     path: path.join(__dirname, 'dist'),
