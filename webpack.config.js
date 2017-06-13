@@ -5,6 +5,9 @@ module.exports = {
   devtool: 'inline-source-map',
   entry: {
     app: './src/app.js',
+    LinkEditor: './src/LinkEditor.js',
+    BlockRenderExample: './src/BlockRenderExample.js',
+    entity: './src/entity.js',
     tweet: './src/tweet.js'
   },
   output: {

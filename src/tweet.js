@@ -9,6 +9,44 @@ import {
   ContentState
 } from 'draft-js';
 
+const HANDLE_REGEX = /\@[\w]+/g;
+const HASHTAG_REGEX = /\#[\w\u0590-\u05ff]+/g;
+
+function handleStrategy(contentBlock, callback, contentState) {
+  findWithRegex(HANDLE_REGEX, contentBlock, callback);
+}
+
+function hashtagStrategy(contentBlock, callback, contentState) {
+  findWithRegex(HASHTAG_REGEX, contentBlock, callback);
+}
+
+function findWithRegex(regex, contentBlock, callback) {
+  const text = contentBlock.getText();
+  let matchArr, start;
+
+  while ((matchArr = regex.exec(text)) !== null) {
+    start = matchArr.index;
+    callback(start, start + matchArr[0].length);
+  }
+}
+
+const HandleSpan = props => {
+  return (
+    <span style={styles.handle} data-offset-key={props.offsetKey}>
+      {props.children}
+    </span>
+  );
+};
+
+const HashtagSpan = props => {
+  console.log(props);
+  return (
+    <span style={styles.hashtag} data-offset-key={props.offsetKey}>
+      {props.children}
+    </span>
+  );
+};
+
 class TweetEditorExample extends React.Component {
   constructor() {
     super();
@@ -55,43 +93,6 @@ class TweetEditorExample extends React.Component {
     );
   }
 }
-
-const HANDLE_REGEX = /\@[\w]+/g;
-const HASHTAG_REGEX = /\#[\w\u0590-\u05ff]+/g;
-
-function handleStrategy(contentBlock, callback, contentState) {
-  findWithRegex(HANDLE_REGEX, contentBlock, callback);
-}
-
-function hashtagStrategy(contentBlock, callback, contentState) {
-  findWithRegex(HASHTAG_REGEX, contentBlock, callback);
-}
-
-function findWithRegex(regex, contentBlock, callback) {
-  const text = contentBlock.getText();
-  let matchArr, start;
-
-  while ((matchArr = regex.exec(text)) !== null) {
-    start = matchArr.index;
-    callback(start, start + matchArr[0].length);
-  }
-}
-
-const HandleSpan = props => {
-  return (
-    <span style={styles.handle} data-offset-key={props.offsetKey}>
-      {props.children}
-    </span>
-  );
-};
-
-const HashtagSpan = props => {
-  return (
-    <span style={styles.hashtag} data-offset-key={props.offsetKey}>
-      {props.children}
-    </span>
-  );
-};
 
 const styles = {
   root: {
