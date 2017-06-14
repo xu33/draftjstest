@@ -9,37 +9,43 @@ import {
 } from 'draft-js';
 
 class MediaEditorExample extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      editorState: EditorState.createEmpty(),
-      showURLInput: false,
-      url: '',
-      urlType: ''
-    };
-    this.focus = () => this.refs.editor.focus();
-    this.logState = () => {
-      const content = this.state.editorState.getCurrentContent();
-      console.log(convertToRaw(content));
-    };
-    this.onChange = editorState => this.setState({ editorState });
-    this.onURLChange = e => this.setState({ urlValue: e.target.value });
-    this.addImage = this._addImage.bind(this);
+  state = {
+    editorState: EditorState.createEmpty(),
+    showURLInput: false,
+    url: '',
+    urlType: ''
+  };
 
-    this.confirmMedia = this._confirmMedia.bind(this);
-    this.handleKeyCommand = this._handleKeyCommand.bind(this);
-    this.onURLInputKeyDown = this._onURLInputKeyDown.bind(this);
-  }
-  _handleKeyCommand(command) {
+  focus = () => {
+    this.refs.editor.focus();
+  };
+
+  logState = () => {
+    const content = this.state.editorState.getCurrentContent();
+    console.log(convertToRaw(content));
+  };
+
+  onChange = editorState => this.setState({ editorState });
+
+  onURLChange = e => this.setState({ urlValue: e.target.value });
+
+  addImage = () => this.promptForMedia('image');
+
+  promptForMedia = type => {
     const { editorState } = this.state;
-    const newState = RichUtils.handleKeyCommand(editorState, command);
-    if (newState) {
-      this.onChange(newState);
-      return true;
-    }
-    return false;
-  }
-  _confirmMedia(e) {
+    this.setState(
+      {
+        showURLInput: true,
+        urlValue: '',
+        urlType: type
+      },
+      () => {
+        setTimeout(() => this.refs.url.focus(), 0);
+      }
+    );
+  };
+
+  confirmMedia = e => {
     e.preventDefault();
     const { editorState, urlValue, urlType } = this.state;
     const contentState = editorState.getCurrentContent();
@@ -66,28 +72,24 @@ class MediaEditorExample extends React.Component {
         setTimeout(() => this.focus(), 0);
       }
     );
-  }
-  _onURLInputKeyDown(e) {
+  };
+
+  handleKeyCommand = command => {
+    const { editorState } = this.state;
+    const newState = RichUtils.handleKeyCommand(editorState, command);
+    if (newState) {
+      this.onChange(newState);
+      return true;
+    }
+    return false;
+  };
+
+  onURLInputKeyDown = e => {
     if (e.which === 13) {
       this._confirmMedia(e);
     }
-  }
-  _promptForMedia(type) {
-    const { editorState } = this.state;
-    this.setState(
-      {
-        showURLInput: true,
-        urlValue: '',
-        urlType: type
-      },
-      () => {
-        setTimeout(() => this.refs.url.focus(), 0);
-      }
-    );
-  }
-  _addImage() {
-    this._promptForMedia('image');
-  }
+  };
+
   render() {
     let urlInput;
     if (this.state.showURLInput) {
@@ -121,7 +123,6 @@ class MediaEditorExample extends React.Component {
             editorState={this.state.editorState}
             handleKeyCommand={this.handleKeyCommand}
             onChange={this.onChange}
-            placeholder="Enter some text..."
             ref="editor"
           />
         </div>

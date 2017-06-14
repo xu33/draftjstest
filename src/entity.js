@@ -26,8 +26,10 @@ const styles = {
     textAlign: 'center'
   },
   immutable: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    padding: '2px 0'
+    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+    display: 'inline-block',
+    padding: '2px',
+    border: '1px solid #f00'
   },
   mutable: {
     backgroundColor: 'rgba(204, 204, 255, 1.0)',
@@ -42,60 +44,35 @@ const styles = {
 const rawContent = {
   blocks: [
     {
-      text: 'This is an "immutable" entity: Superman. Deleting any ' +
+      text: 'This is an "immutable" entity: 呵呵. Deleting any ' +
         'characters will delete the entire entity. Adding characters ' +
         'will remove the entity from the range.',
       type: 'unstyled',
-      entityRanges: [{ offset: 31, length: 8, key: 'first' }]
-    },
-    {
-      text: '',
-      type: 'unstyled'
-    },
-    {
-      text: 'This is a "mutable" entity: Batman. Characters may be added ' +
-        'and removed.',
-      type: 'unstyled',
-      entityRanges: [{ offset: 28, length: 6, key: 'second' }]
-    },
-    {
-      text: '',
-      type: 'unstyled'
-    },
-    {
-      text: 'This is a "segmented" entity: Green Lantern. Deleting any ' +
-        'characters will delete the current "segment" from the range. ' +
-        'Adding characters will remove the entire entity from the range.',
-      type: 'unstyled',
-      entityRanges: [{ offset: 30, length: 13, key: 'third' }]
+      entityRanges: [
+        { offset: 31, length: 1, key: 'aaa' },
+        { offset: 35, length: 1, key: 'aaa' }
+      ]
     }
   ],
   entityMap: {
-    first: {
+    aaa: {
       type: 'TOKEN',
       mutability: 'IMMUTABLE'
-    },
-    second: {
-      type: 'TOKEN',
-      mutability: 'MUTABLE'
-    },
-    third: {
-      type: 'TOKEN',
-      mutability: 'SEGMENTED'
     }
   }
 };
 
-function getEntityStrategy(mutability) {
-  return function(contentBlock, callback, contentState) {
-    contentBlock.findEntityRanges(character => {
-      const entityKey = character.getEntity();
-      if (entityKey === null) {
-        return false;
-      }
-      return contentState.getEntity(entityKey).getMutability() === mutability;
-    }, callback);
-  };
+function entityStrategy(contentBlock, callback, contentState) {
+  console.log('contentBlock', contentBlock.toJS());
+  contentBlock.findEntityRanges(character => {
+    const entityKey = character.getEntity();
+
+    if (entityKey === null) {
+      return false;
+    }
+
+    return contentState.getEntity(entityKey).getMutability() === 'IMMUTABLE';
+  }, callback);
 }
 
 function getDecoratedStyle(mutability) {
@@ -103,23 +80,14 @@ function getDecoratedStyle(mutability) {
     case 'IMMUTABLE':
       return styles.immutable;
 
-    case 'MUTABLE':
-      return styles.mutable;
-
-    case 'SEGMENTED':
-      return styles.segmented;
-
     default:
       return null;
   }
 }
 
 const TokenSpan = props => {
-  const style = getDecoratedStyle(
-    props.contentState.getEntity(props.entityKey).getMutability()
-  );
   return (
-    <span data-offset-key={props.offsetkey} style={style}>
+    <span data-offset-key={props.offsetkey} style={styles.immutable}>
       {props.children}
     </span>
   );
@@ -131,15 +99,7 @@ class EntityEditorExample extends React.Component {
 
     const decorator = new CompositeDecorator([
       {
-        strategy: getEntityStrategy('IMMUTABLE'),
-        component: TokenSpan
-      },
-      {
-        strategy: getEntityStrategy('MUTABLE'),
-        component: TokenSpan
-      },
-      {
-        strategy: getEntityStrategy('SEGMENTED'),
+        strategy: entityStrategy,
         component: TokenSpan
       }
     ]);
@@ -165,7 +125,6 @@ class EntityEditorExample extends React.Component {
           <Editor
             editorState={this.state.editorState}
             onChange={this.onChange}
-            placeholder="Enter some text..."
             ref="editor"
           />
         </div>

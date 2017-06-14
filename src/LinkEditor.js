@@ -42,6 +42,16 @@ const styles = {
   }
 };
 
+function findLinkEntities(contentBlock, callback, contentState) {
+  contentBlock.findEntityRanges(character => {
+    const entityKey = character.getEntity();
+    return (
+      entityKey !== null &&
+      contentState.getEntity(entityKey).getType() === 'LINK'
+    );
+  }, callback);
+}
+
 const Link = props => {
   const { url } = props.contentState.getEntity(props.entityKey).getData();
   return (
@@ -113,14 +123,12 @@ class LinkEditorExample extends React.Component {
     e.preventDefault();
     const { editorState, urlValue } = this.state;
     const contentState = editorState.getCurrentContent();
-    const contentStateWithEntity = contentState.createEntity(
-      'LINK',
-      'IMMUTABLE',
-      { url: urlValue }
-    );
-    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newContentState = contentState.createEntity('LINK', 'MUTABLE', {
+      url: urlValue
+    });
+    const entityKey = newContentState.getLastCreatedEntityKey();
     const newEditorState = EditorState.set(editorState, {
-      currentContent: contentStateWithEntity
+      currentContent: newContentState
     });
     this.setState(
       {
@@ -202,16 +210,6 @@ class LinkEditorExample extends React.Component {
       </div>
     );
   }
-}
-
-function findLinkEntities(contentBlock, callback, contentState) {
-  contentBlock.findEntityRanges(character => {
-    const entityKey = character.getEntity();
-    return (
-      entityKey !== null &&
-      contentState.getEntity(entityKey).getType() === 'LINK'
-    );
-  }, callback);
 }
 
 ReactDOM.render(<LinkEditorExample />, document.getElementById('target'));
