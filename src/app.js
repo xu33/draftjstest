@@ -26,6 +26,17 @@ class AddListExample extends React.Component {
     });
   };
 
+  addOrderList = () => {
+    const newState = RichUtils.toggleBlockType(
+      this.state.editorState,
+      'ordered-list-item'
+    );
+
+    this.setState({
+      editorState: newState
+    });
+  };
+
   render() {
     return (
       <div>
