@@ -1,6 +1,6 @@
 /**
  * Decorator
- * 扫描contentBlock的内容
+ * 根据提供的strategy扫描contentBlock的内容，如果发现匹配，就用指定的react component去渲染该内容
  */
 
 import React from 'react';
