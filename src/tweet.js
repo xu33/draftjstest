@@ -1,56 +1,14 @@
+/**
+ * Decorator
+ * 扫描contentBlock的内容
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {
-  Editor,
-  EditorState,
-  RichUtils,
-  CompositeDecorator,
-  convertToRaw,
-  ContentState
-} from 'draft-js';
-
-const HANDLE_REGEX = /\@[\w]+/g;
-const HASHTAG_REGEX = /\#[\w\u0590-\u05ff]+/g;
-
-function handleStrategy(contentBlock, callback, contentState) {
-  findWithRegex(HANDLE_REGEX, contentBlock, callback);
-}
-
-function hashtagStrategy(contentBlock, callback, contentState) {
-  findWithRegex(HASHTAG_REGEX, contentBlock, callback);
-}
-
-function findWithRegex(regex, contentBlock, callback) {
-  const text = contentBlock.getText();
-  let matchArr, start;
-
-  while ((matchArr = regex.exec(text)) !== null) {
-    start = matchArr.index;
-    callback(start, start + matchArr[0].length);
-  }
-}
-
-const HandleSpan = props => {
-  return (
-    <span style={styles.handle} data-offset-key={props.offsetKey}>
-      {props.children}
-    </span>
-  );
-};
-
-const HashtagSpan = props => {
-  console.log(props);
-  return (
-    <span style={styles.hashtag} data-offset-key={props.offsetKey}>
-      {props.children}
-    </span>
-  );
-};
-
+import { CompositeDecorator, Editor, EditorState } from 'draft-js';
 class TweetEditorExample extends React.Component {
   constructor() {
     super();
-
     const compositeDecorator = new CompositeDecorator([
       {
         strategy: handleStrategy,
@@ -59,18 +17,19 @@ class TweetEditorExample extends React.Component {
       {
         strategy: hashtagStrategy,
         component: HashtagSpan
+      },
+      {
+        strategy: percentStrategy,
+        component: PercentSpan
       }
     ]);
-
     this.state = {
       editorState: EditorState.createEmpty(compositeDecorator)
     };
-
     this.focus = () => this.refs.editor.focus();
     this.onChange = editorState => this.setState({ editorState });
     this.logState = () => console.log(this.state.editorState.toJS());
   }
-
   render() {
     return (
       <div style={styles.root}>
@@ -78,7 +37,6 @@ class TweetEditorExample extends React.Component {
           <Editor
             editorState={this.state.editorState}
             onChange={this.onChange}
-            placeholder="Write a tweet..."
             ref="editor"
             spellCheck={true}
           />
@@ -94,6 +52,47 @@ class TweetEditorExample extends React.Component {
   }
 }
 
+const HANDLE_REGEX = /\@[\w]+/g;
+const HASHTAG_REGEX = /\#[\w\u0590-\u05ff]+/g;
+const PERCENT_REGEX = /\%[\w]+/g;
+function handleStrategy(contentBlock, callback, contentState) {
+  findWithRegex(HANDLE_REGEX, contentBlock, callback);
+}
+function hashtagStrategy(contentBlock, callback, contentState) {
+  findWithRegex(HASHTAG_REGEX, contentBlock, callback);
+}
+function percentStrategy(contentBlock, callback, contentState) {
+  findWithRegex(PERCENT_REGEX, contentBlock, callback);
+}
+function findWithRegex(regex, contentBlock, callback) {
+  const text = contentBlock.getText();
+  let matchArr, start;
+  while ((matchArr = regex.exec(text)) !== null) {
+    start = matchArr.index;
+    callback(start, start + matchArr[0].length);
+  }
+}
+const HandleSpan = props => {
+  return (
+    <span style={styles.handle} data-offset-key={props.offsetKey}>
+      {props.children}
+    </span>
+  );
+};
+const HashtagSpan = props => {
+  return (
+    <span style={styles.hashtag} data-offset-key={props.offsetKey}>
+      {props.children}
+    </span>
+  );
+};
+const PercentSpan = props => {
+  return (
+    <span style={styles.percent} data-offset-key={props.offsetKey}>
+      {props.children}
+    </span>
+  );
+};
 const styles = {
   root: {
     fontFamily: "'Helvetica', sans-serif",
@@ -118,7 +117,9 @@ const styles = {
   },
   hashtag: {
     color: 'rgba(95, 184, 138, 1.0)'
+  },
+  percent: {
+    color: '#FF0000'
   }
 };
-
 ReactDOM.render(<TweetEditorExample />, document.getElementById('target'));

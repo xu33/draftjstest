@@ -29,30 +29,15 @@ class MediaEditorExample extends React.Component {
 
   onURLChange = e => this.setState({ urlValue: e.target.value });
 
-  addImage = () => this.promptForMedia('image');
-
-  promptForMedia = type => {
-    const { editorState } = this.state;
-    this.setState(
-      {
-        showURLInput: true,
-        urlValue: '',
-        urlType: type
-      },
-      () => {
-        setTimeout(() => this.refs.url.focus(), 0);
-      }
-    );
-  };
-
-  confirmMedia = e => {
-    e.preventDefault();
+  addImage = () => {
     const { editorState, urlValue, urlType } = this.state;
     const contentState = editorState.getCurrentContent();
     const contentStateWithEntity = contentState.createEntity(
-      urlType,
+      'image',
       'IMMUTABLE',
-      { src: urlValue }
+      {
+        src: 'https://pic3.zhimg.com/v2-f34265d5530a9861a3a02ff33d2aed46_r.jpg'
+      }
     );
     const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
     const newEditorState = EditorState.set(editorState, {
@@ -67,6 +52,43 @@ class MediaEditorExample extends React.Component {
         ),
         showURLInput: false,
         urlValue: ''
+      },
+      () => {
+        setTimeout(() => this.focus(), 0);
+      }
+    );
+  };
+
+  addDiv = e => {
+    e.preventDefault();
+
+    const { editorState } = this.state;
+    // 获取contentState
+    const contentState = editorState.getCurrentContent();
+    // 创建新的entity
+    const contentStateWithEntity = contentState.createEntity(
+      'div',
+      'IMMUTABLE',
+      {
+        style: {
+          backgroundColor: '#EEE',
+          width: 100,
+          height: 100
+        }
+      }
+    );
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState = EditorState.set(editorState, {
+      currentContent: contentStateWithEntity
+    });
+
+    this.setState(
+      {
+        editorState: AtomicBlockUtils.insertAtomicBlock(
+          newEditorState,
+          entityKey,
+          ' '
+        )
       },
       () => {
         setTimeout(() => this.focus(), 0);
@@ -115,6 +137,9 @@ class MediaEditorExample extends React.Component {
           <button onMouseDown={this.addImage} style={{ marginRight: 10 }}>
             插入图片
           </button>
+          <button style={{ marginRight: 10 }} onMouseDown={this.addDiv}>
+            插入div
+          </button>
         </div>
         {urlInput}
         <div style={styles.editor} onClick={this.focus}>
@@ -148,17 +173,28 @@ function mediaBlockRenderer(block) {
 }
 
 const Image = props => {
-  return <img src={props.src} style={styles.media} />;
+  return (
+    <div
+      style={{
+        border: '1px solid #eee',
+        padding: 4
+      }}
+    >
+      <img src={props.src} style={styles.media} />
+    </div>
+  );
 };
 
 const Media = props => {
   const entity = props.contentState.getEntity(props.block.getEntityAt(0));
-  const { src } = entity.getData();
+  const { src, style } = entity.getData();
   const type = entity.getType();
   let media;
 
   if (type === 'image') {
     media = <Image src={src} />;
+  } else if (type === 'div') {
+    media = <div style={{ ...style }} />;
   }
 
   return media;

@@ -62,8 +62,8 @@ const rawContent = {
   }
 };
 
-function entityStrategy(contentBlock, callback, contentState) {
-  console.log('contentBlock', contentBlock.toJS());
+function _entityStrategy(contentBlock, callback, contentState) {
+  // console.log('contentBlock', contentBlock.toJS());
   contentBlock.findEntityRanges(character => {
     const entityKey = character.getEntity();
 

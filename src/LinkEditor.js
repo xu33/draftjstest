@@ -123,7 +123,7 @@ class LinkEditorExample extends React.Component {
     e.preventDefault();
     const { editorState, urlValue } = this.state;
     const contentState = editorState.getCurrentContent();
-    const newContentState = contentState.createEntity('LINK', 'MUTABLE', {
+    const newContentState = contentState.createEntity('LINK', 'IMMUTABLE', {
       url: urlValue
     });
     const entityKey = newContentState.getLastCreatedEntityKey();
